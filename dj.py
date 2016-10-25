@@ -1,3 +1,4 @@
+#!/bin/python
 import requests # to get our data
 import json # might not be needed
 import os # to make call to media player
@@ -112,8 +113,15 @@ def plCreate(urls):
     #just making things look nicer
 
 def mpv(urls, flag):
-    command = "mpv %s %s" % (re.sub(',','',' '.join(urls)), flag)
-    subprocess.Popen(command, shell=True)
+    try:
+        command = "mpv %s %s" % (re.sub(',','',' '.join(urls)), flag)
+        p = subprocess.Popen(command, shell=True)
+        try:
+            p.wait()
+        except KeyboardInterrupt:
+            p.terminate()
+    except:
+        pass
 
 def writeOut(url, filename="dj.txt"):
     f = open(filename, 'w')
