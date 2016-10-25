@@ -1,0 +1,10 @@
+#!/bin/bash
+curl "$@" | 
+grep -Po "((https?)?:?(\/\/))?(([\d*|\w*]+\.){2,}[\w*]+\/)([\w*|\d*]+\/)*([\w*|\d*]*\.(webm|mp4|mp3|avi|flv))" > tmplist
+sed -ie 's/^\/\//http:\/\//g' tmplist
+cat tmplist | uniq > tmpb
+cat tmpb > tmplist
+rm tmpb
+sed -ie ':a;N;$!ba;s/\n/ /g' tmplist
+
+cat tmplist
