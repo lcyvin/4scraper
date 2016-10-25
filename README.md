@@ -11,3 +11,5 @@ All requirements should be met with the default python 3.5 libraries.
 - -o - Output - [mpv|print|write\*]
 - -b - Board - any 4chan board code (wsg, gif, etc.)
 - -f - Flag - flag to pass to MPV
+
+\* May not work properly
