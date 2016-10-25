@@ -13,9 +13,9 @@ boards = {
     "gif" : "Gif (NSFW)",
 }
 
-def getTitle():
-    title = input("What would you like to search for?\n> ")
-    return title
+def getSearch():
+    search = input("What would you like to search for?\n> ")
+    return search
 
 def getCatalog(board="wsg"):
     #get our data using 4chan API
@@ -24,6 +24,19 @@ def getCatalog(board="wsg"):
     catalog = requests.get(board_url).json()
     #this is 10 items long, we need to extract thread names only.
     return catalog
+
+def getContent(board, thread):
+    content = []
+    html = requests.get('https://boards.4chan.org/' + board + '/thread/' + thread) # get the thread's HTML body
+    wf = '((https?)?:?(\\/\\/))?(([\\d*|\\w*]+\\.){2,}[\\w*]+\\/)([\\w*|\\d*]+\\/)*([\\w*|\\d*]*\\.(webm|mp4|mp3|avi|flv))' # grep for .webm URLS in 4chan HTML
+    b_url = 'https://i.4cdn.org/' + board + '/'# base URL for webms (and all other content, but we want webms)
+    r = re.findall(wf, html.text)
+    for i in range(len(r)):
+        url = b_url + r[i][6]
+        if url not in content:
+            content.append(url)
+
+    return content
 
 def stripHTML(string):
     #this is needed because 4chan stores HTML formatting in the JSON strings. Bleh.
@@ -66,15 +79,16 @@ def getThreads(catalog, search_string="ygyl"):
 
     return results
 
+
 def handleSearch(results):
-    if len(results) == 0:
+    if len(results) == 0:# when no GIF thread for your fetish exists
         print('nothing found')
         
-    elif len(results) > 1:
+    elif len(results) > 1:# if len == 1, go straight to output
         i = 0
         choices = {}
         print('Choose which thread you\'d like to use:\n')
-        for result in results:
+        for result in results:#results from getThreads()
             print(str(i) + ') ' + str(results[result]['title']))
             if results[result]['subTitle'] != "":
                 print(results[result]['subTitle'])
@@ -91,13 +105,14 @@ def handleSearch(results):
         for result in results:
             return(result)
 
-def scraper(url):
-    cmd = 'exec /usr/local/bin/4scraper %s' % url
-    scrape = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-    print(scrape)
 
-def mpv(url, flag):
-    command = "mpv $($(which 4scraper) %s) %s" % (url, flag)
+def plCreate(urls):
+    pl = re.sub(',','',' '.join(urls))
+    return pl
+    #just making things look nicer
+
+def mpv(urls, flag):
+    command = "mpv %s %s" % (re.sub(',','',' '.join(urls)), flag)
     subprocess.Popen(command, shell=True)
 
 def writeOut(url, filename="dj.txt"):
@@ -105,31 +120,35 @@ def writeOut(url, filename="dj.txt"):
     f.write(url)
     f.close()
 
+
 def run(query, board, output, flag):
     out = {
         'print' : print,
-        'scraper' : scraper,
         'mpv' : mpv,
         'write' : writeOut
     }
     cat = getCatalog(board)
     r = getThreads(cat, query)
-    o = handleSearch(r)
+    thread = handleSearch(r)
+    try:
+        o = getContent(board, thread)
+    except:
+        return None
 
-    if o is not None:
+    if thread is not None:
         if output == 'write':
-            out[output]('https://boards.4chan.org/' + str(board) + '/thread/' + str(o))
+            out[output]('https://boards.4chan.org/' + str(board) + '/thread/' + thread)
         elif output == 'mpv':
-           out[output]('https://boards.4chan.org/' + str(board) + '/thread/' + str(o), flag)
+           out[output](o, flag)
         else:
-            out[output]('https://boards.4chan.org/' + str(board) + '/thread/' + str(o))
+            out[output]('https://boards.4chan.org/' + str(board) + '/thread/' + thread)
 
 # this is the part that handles command line input
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("query", help="Thread you would like to search for", type=str)
     parser.add_argument("-b", "--board", nargs='?', const='wsg', default="wsg", help="specify board you would like to search", type=str)
-    parser.add_argument('-o', '--output', nargs='?', const='print', default="print", type=str, help="specify the way you want dj to handle the results.")
+    parser.add_argument('-o', '--output', nargs='?', const='print', default="mpv", type=str, help="specify the way you want dj to handle the results.")
     parser.add_argument('-f', '--flag', nargs='?', const="", type=str, help="Flag to pass to media player")
     args = parser.parse_args()
     
@@ -137,3 +156,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
