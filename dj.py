@@ -104,6 +104,12 @@ def handleSearch(results):
             print('invalid number entered')
     else:
         for result in results:
+            print('Using thread:')
+            print(str(results[result]['title']))
+            if results[result]['subTitle'] != "":
+                print(results[result]['subTitle'])
+            print('Replies: ' + results[result]['replies'])
+            print('-------')
             return(result)
 
 
