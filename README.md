@@ -20,3 +20,7 @@ All other requirements should be met with the default python 3.5 libraries.
 \* May not work properly
 
 I have no clue if this works on Windows or OSX, I haven't tested it there. I'd like to assume that at the very least this python script will run in cygwin, MAYBE powershell? OSX support equally ambiguous.
+
+**Tested On:**
+- Linux
+- Android w/ Termux
