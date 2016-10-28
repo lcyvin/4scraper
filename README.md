@@ -5,7 +5,7 @@ Currently, this project is in its absolute infancy. While it works on MY compute
 
 **Requirements:**
 
-MPV
+[MPV](https://github.com/mpv-player/mpv)
 
 Requests `pip install requests`
 
