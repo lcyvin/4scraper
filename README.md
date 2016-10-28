@@ -7,6 +7,8 @@ Currently, this project is in its absolute infancy. While it works on MY compute
 
 MPV
 
+Requests `pip install requests`
+
 All other requirements should be met with the default python 3.5 libraries. 
 
 **Flags:**
